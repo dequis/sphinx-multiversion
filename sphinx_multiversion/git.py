@@ -154,17 +154,17 @@ def file_exists(gitroot, refname, filename):
 
 
 def copy_tree(gitroot, src, dst, reference, sourcepath="."):
-    with tempfile.SpooledTemporaryFile() as fp:
-        cmd = (
-            "git",
-            "archive",
-            "--format",
-            "tar",
-            reference.commit,
-            "--",
-            sourcepath,
-        )
-        subprocess.check_call(cmd, cwd=gitroot, stdout=fp)
-        fp.seek(0)
-        with tarfile.TarFile(fileobj=fp) as tarfp:
-            tarfp.extractall(dst)
+    os.makedirs(dst, exist_ok=True)
+    cmd = (
+        "git",
+        "clone",
+        sourcepath,
+        dst,
+    )
+    subprocess.run(cmd, cwd=gitroot, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    cmd = (
+        "git",
+        "checkout",
+        reference.commit,
+    )
+    subprocess.run(cmd, cwd=dst, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
